@@ -1,0 +1,9 @@
+jurisdiction_code,risk_score,risk_tier,data_class,note
+TR,5,LOW,synthetic_internal,Illustrative internal taxonomy only
+DE,4,LOW,synthetic_internal,Illustrative internal taxonomy only
+GB,5,LOW,synthetic_internal,Illustrative internal taxonomy only
+US,6,LOW,synthetic_internal,Illustrative internal taxonomy only
+AE,14,MEDIUM,synthetic_internal,Illustrative internal taxonomy only
+GE,16,MEDIUM,synthetic_internal,Illustrative internal taxonomy only
+RS,18,MEDIUM,synthetic_internal,Illustrative internal taxonomy only
+XH,30,HIGH,synthetic_internal,Fictitious jurisdiction used only to test controls

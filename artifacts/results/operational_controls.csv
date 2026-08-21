@@ -1,0 +1,8 @@
+control_id,metric,actual,limit,operator,status
+VAL-01,Synthetic holdout recall,0.989100,0.700000,>=,PASS
+VAL-02,Synthetic holdout precision reference,0.679100,0.080000,>=,PASS
+VAL-03,Unique-customer alert rate,0.070000,0.120000,<=,PASS
+OPS-01,Open case inventory vs weekly capacity,50.000000,90.000000,<=,PASS
+OPS-02,Open SLA breaches,0.000000,0.000000,<=,PASS
+OPS-03,High-priority cases with human-review flag,21.000000,21.000000,==,PASS
+OPS-04,KYC reviews overdue,0.495600,0.350000,<=,BREACH

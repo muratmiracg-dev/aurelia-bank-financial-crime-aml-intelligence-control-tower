@@ -1,0 +1,69 @@
+-- Core portfolio measures for the documented Power BI semantic model.
+
+Total Transactions :=
+COUNTROWS ( Transactions )
+
+Transaction Value TRY :=
+SUM ( Transactions[amount_try] )
+
+Total Alerts :=
+DISTINCTCOUNT ( Alerts[alert_id] )
+
+Alerted Customers :=
+DISTINCTCOUNT ( Alerts[customer_id] )
+
+Alert Rate % :=
+DIVIDE ( [Alerted Customers], DISTINCTCOUNT ( Customers[customer_id] ) )
+
+High Priority Alerts :=
+CALCULATE ( [Total Alerts], Alerts[priority] = "HIGH" )
+
+Average Alert Score :=
+AVERAGE ( Alerts[alert_score] )
+
+Open Cases :=
+CALCULATE ( DISTINCTCOUNT ( Cases[case_id] ), Cases[case_status] <> "CLOSED" )
+
+Cases In Review :=
+CALCULATE ( DISTINCTCOUNT ( Cases[case_id] ), Cases[case_status] = "IN_REVIEW" )
+
+SLA Breached Open Cases :=
+CALCULATE (
+    DISTINCTCOUNT ( Cases[case_id] ),
+    Cases[case_status] <> "CLOSED",
+    Cases[sla_status] = "BREACHED"
+)
+
+SLA Compliance % :=
+1 - DIVIDE ( [SLA Breached Open Cases], [Open Cases] )
+
+High KYC Risk Customers :=
+CALCULATE ( DISTINCTCOUNT ( KYCRisk[customer_id] ), KYCRisk[kyc_risk_band] = "HIGH" )
+
+KYC Overdue Customers :=
+CALCULATE ( DISTINCTCOUNT ( KYCRisk[customer_id] ), KYCRisk[kyc_overdue_flag] = TRUE () )
+
+KYC Overdue Rate % :=
+DIVIDE ( [KYC Overdue Customers], DISTINCTCOUNT ( Customers[customer_id] ) )
+
+Synthetic Validation Precision % :=
+CALCULATE ( MAX ( Performance[precision] ), Performance[scenario_id] = "OVERALL" )
+
+Synthetic Validation Recall % :=
+CALCULATE ( MAX ( Performance[recall] ), Performance[scenario_id] = "OVERALL" )
+
+Closed No-Escalation Share % :=
+DIVIDE (
+    CALCULATE (
+        DISTINCTCOUNT ( Cases[case_id] ),
+        Cases[case_status] = "CLOSED",
+        Cases[analyst_disposition] = "NO_ESCALATION"
+    ),
+    CALCULATE ( DISTINCTCOUNT ( Cases[case_id] ), Cases[case_status] = "CLOSED" )
+)
+
+Human Review Coverage % :=
+DIVIDE (
+    CALCULATE ( DISTINCTCOUNT ( Cases[case_id] ), Cases[human_review_required] = TRUE () ),
+    DISTINCTCOUNT ( Cases[case_id] )
+)

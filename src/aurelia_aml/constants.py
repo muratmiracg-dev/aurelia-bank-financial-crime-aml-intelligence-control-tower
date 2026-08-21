@@ -1,0 +1,17 @@
+"""Stable project constants."""
+
+from __future__ import annotations
+
+SCENARIO_IDS = (
+    "STRUCTURING",
+    "RAPID_MOVEMENT",
+    "DORMANT_REACTIVATION",
+    "FUNNEL_MULE",
+    "CIRCULAR_TRANSFER",
+    "HIGH_RISK_GEOGRAPHY",
+)
+
+PRIORITY_ORDER = {"HIGH": 1, "MEDIUM": 2, "LOW": 3}
+SUPPORTED_CURRENCIES = ("TRY", "USD", "EUR")
+REPORTING_CURRENCY = "TRY"
+SYNTHETIC_EXTERNAL_PREFIX = "EXT"

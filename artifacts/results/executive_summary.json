@@ -1,0 +1,60 @@
+{
+  "project": "Aurelia Bank Financial Crime & AML Intelligence Control Tower",
+  "as_of_date": "2026-08-20",
+  "seed": 20260821,
+  "data_posture": {
+    "bank_data": "deterministic controlled synthetic",
+    "validation_labels": "isolated synthetic holdout truth",
+    "watchlist_data": "synthetic placeholders only",
+    "regulatory_material": "official public methodology references"
+  },
+  "population": {
+    "customers": 1800,
+    "accounts": 2250,
+    "transactions": 48412,
+    "transaction_value_try": 416637287.37
+  },
+  "kyc": {
+    "high_risk_customers": 29,
+    "overdue_reviews": 892
+  },
+  "monitoring": {
+    "alerts": 134,
+    "unique_alerted_customers": 126,
+    "alert_rate_pct": 7.0,
+    "high_priority": 21,
+    "medium_priority": 113,
+    "low_priority": 0,
+    "largest_alert_scenario": "CIRCULAR_TRANSFER"
+  },
+  "validation": {
+    "precision_pct": 67.91,
+    "recall_pct": 98.91,
+    "f1_pct": 80.53,
+    "truth_labels_used_for_detection": false
+  },
+  "case_operations": {
+    "cases": 126,
+    "open": 25,
+    "in_review": 25,
+    "closed": 76,
+    "open_sla_breaches": 0
+  },
+  "graph": {
+    "customers_in_short_cycles": 30,
+    "maximum_component_size": 1800,
+    "p95_graph_risk_score": 67.07
+  },
+  "controls": {
+    "data_quality_passed": 12,
+    "data_quality_total": 12,
+    "management_breaches": 1,
+    "management_controls_total": 7
+  },
+  "governance": {
+    "automated_str_submission": false,
+    "automated_customer_restriction": false,
+    "human_review_required": true,
+    "thresholds_are_internal_parameters": true
+  }
+}

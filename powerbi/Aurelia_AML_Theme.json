@@ -1,0 +1,15 @@
+{
+  "name": "Aurelia AML Intelligence",
+  "dataColors": ["#0E7490", "#32B7C7", "#15803D", "#D97706", "#C2413B", "#64748B"],
+  "background": "#F4F7FA",
+  "foreground": "#0B1F33",
+  "tableAccent": "#0E7490",
+  "good": "#15803D",
+  "neutral": "#D97706",
+  "bad": "#C2413B",
+  "textClasses": {
+    "title": {"fontFace": "Aptos Display", "fontSize": 14, "color": "#0B1F33"},
+    "label": {"fontFace": "Aptos", "fontSize": 10, "color": "#475569"},
+    "callout": {"fontFace": "Aptos Display", "fontSize": 28, "color": "#0B1F33"}
+  }
+}

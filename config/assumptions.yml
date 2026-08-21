@@ -1,0 +1,22 @@
+as_of_date: "2026-08-20"
+observation_days: 90
+synthetic_population:
+  customers: 1800
+  accounts: 2250
+  baseline_transactions: 48000
+jurisdiction_risk:
+  TR: 5
+  DE: 4
+  GB: 5
+  US: 6
+  AE: 14
+  GE: 16
+  RS: 18
+  XH: 30
+synthetic_high_risk_jurisdiction: XH
+case_operations:
+  analyst_daily_capacity: 18
+  high_priority_sla_days: 1
+  medium_priority_sla_days: 3
+  low_priority_sla_days: 5
+  maximum_kyc_overdue_rate: 0.35

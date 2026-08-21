@@ -1,0 +1,37 @@
+scenarios:
+  STRUCTURING:
+    name: Cash structuring below an internal monitoring threshold
+    severity: 82
+    internal_amount_threshold_try: 50000
+    minimum_transactions: 5
+    window_hours: 48
+    disclaimer: Internal scenario parameter; not a statutory reporting threshold.
+  RAPID_MOVEMENT:
+    name: Rapid movement of incoming funds
+    severity: 88
+    minimum_inflow_try: 120000
+    outbound_ratio: 0.80
+    window_hours: 24
+  DORMANT_REACTIVATION:
+    name: Dormant account reactivation with material activity
+    severity: 76
+    minimum_amount_try: 100000
+    dormant_days: 180
+  FUNNEL_MULE:
+    name: Many-to-one funnel followed by concentrated outflow
+    severity: 92
+    minimum_unique_counterparties: 5
+    minimum_inflow_try: 200000
+    outbound_ratio: 0.75
+    window_hours: 48
+  CIRCULAR_TRANSFER:
+    name: Short-cycle internal transfer activity
+    severity: 95
+    minimum_cycle_amount_try: 75000
+    window_hours: 48
+  HIGH_RISK_GEOGRAPHY:
+    name: Material activity involving the synthetic high-risk jurisdiction
+    severity: 85
+    minimum_total_try: 150000
+    minimum_transactions: 2
+    window_days: 30

@@ -1,0 +1,13 @@
+control_id,control,status
+DQ-01,Customer identifiers are unique,PASS
+DQ-02,Account identifiers are unique,PASS
+DQ-03,Transaction identifiers are unique,PASS
+DQ-04,Every account maps to a known customer,PASS
+DQ-05,Every transaction maps to a known account,PASS
+DQ-06,Every transaction maps to a known customer,PASS
+DQ-07,Transaction amounts are positive,PASS
+DQ-08,Transaction timestamps are complete,PASS
+DQ-09,KYC scores remain within 0-100,PASS
+DQ-10,Rule-hit evidence contains source transaction IDs,PASS
+DQ-11,Validation truth is isolated and labelled,PASS
+DQ-12,Only controlled synthetic records are in customer data,PASS

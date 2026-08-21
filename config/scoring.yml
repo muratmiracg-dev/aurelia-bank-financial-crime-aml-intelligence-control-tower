@@ -1,0 +1,16 @@
+alert_scoring:
+  scenario_weight: 0.60
+  kyc_weight: 0.16
+  anomaly_weight: 0.14
+  graph_weight: 0.10
+  high_priority_floor: 80
+  medium_priority_floor: 62
+model_validation:
+  anomaly_contamination: 0.05
+  alert_recall_floor: 0.70
+  alert_precision_reference_floor: 0.08
+  maximum_alert_rate: 0.12
+human_oversight:
+  automated_str_submission: false
+  automated_customer_restriction: false
+  adverse_action_without_review: false

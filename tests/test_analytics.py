@@ -111,9 +111,7 @@ def test_scenario_data_quality_errors(config, demo):
     invalid = demo["transactions"].head(2).copy()
     invalid.loc[:, "amount_try"] = -1
     with pytest.raises(DataQualityError):
-        run_scenarios(
-            invalid, demo["accounts"], config["scenarios"], config["assumptions"]
-        )
+        run_scenarios(invalid, demo["accounts"], config["scenarios"], config["assumptions"])
 
 
 @pytest.mark.parametrize(
@@ -128,9 +126,5 @@ def test_scenario_data_quality_errors(config, demo):
     ],
 )
 def test_synthetic_holdout_recall(analytics, scenario, minimum_recall):
-    row = (
-        analytics["performance"]
-        .loc[analytics["performance"]["scenario_id"] == scenario]
-        .iloc[0]
-    )
+    row = analytics["performance"].loc[analytics["performance"]["scenario_id"] == scenario].iloc[0]
     assert row["recall"] >= minimum_recall

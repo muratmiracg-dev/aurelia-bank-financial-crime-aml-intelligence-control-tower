@@ -7,6 +7,17 @@ import numpy as np
 import pandas as pd
 
 
+GRAPH_FEATURE_COLUMNS = [
+    "customer_id",
+    "in_degree",
+    "out_degree",
+    "total_degree",
+    "pagerank",
+    "component_size",
+    "short_cycle_member",
+]
+
+
 def build_graph_features(transactions: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
     """Calculate interpretable graph features without making guilt inferences."""
     internal = transactions.loc[
@@ -47,7 +58,7 @@ def build_graph_features(transactions: pd.DataFrame, customers: pd.DataFrame) ->
                 "short_cycle_member": customer in cycle_members,
             }
         )
-    frame = pd.DataFrame(rows)
+    frame = pd.DataFrame(rows, columns=GRAPH_FEATURE_COLUMNS)
     frame["degree_percentile"] = frame["total_degree"].rank(pct=True) * 100
     frame["pagerank_percentile"] = frame["pagerank"].rank(pct=True) * 100
     frame["component_percentile"] = frame["component_size"].rank(pct=True) * 100
@@ -80,6 +91,12 @@ def _cycle_members(internal: pd.DataFrame) -> set[str]:
 
 def graph_summary(features: pd.DataFrame) -> dict[str, float | int]:
     """Return compact management-level graph indicators."""
+    if features.empty:
+        return {
+            "customers_in_short_cycles": 0,
+            "maximum_component_size": 0,
+            "p95_graph_risk_score": 0.0,
+        }
     return {
         "customers_in_short_cycles": int(features["short_cycle_member"].sum()),
         "maximum_component_size": int(features["component_size"].max()),

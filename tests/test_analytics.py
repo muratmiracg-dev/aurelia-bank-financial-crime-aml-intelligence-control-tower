@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from aurelia_aml.anomaly import score_anomalies
 from aurelia_aml.exceptions import DataQualityError
 from aurelia_aml.graph import build_graph_features, graph_summary

@@ -3,7 +3,7 @@ import pytest
 
 from aurelia_aml.anomaly import score_anomalies
 from aurelia_aml.exceptions import DataQualityError
-from aurelia_aml.graph import graph_summary
+from aurelia_aml.graph import build_graph_features, graph_summary
 from aurelia_aml.kyc import score_kyc
 from aurelia_aml.scenarios import run_scenarios
 
@@ -30,10 +30,18 @@ def test_anomaly_output(analytics):
 
 def test_anomaly_is_reproducible(config, demo):
     first = score_anomalies(
-        demo["transactions"], demo["customers"], config["assumptions"], config["scoring"], 7
+        demo["transactions"],
+        demo["customers"],
+        config["assumptions"],
+        config["scoring"],
+        7,
     )
     second = score_anomalies(
-        demo["transactions"], demo["customers"], config["assumptions"], config["scoring"], 7
+        demo["transactions"],
+        demo["customers"],
+        config["assumptions"],
+        config["scoring"],
+        7,
     )
     pd.testing.assert_series_equal(first["anomaly_score"], second["anomaly_score"])
 
@@ -45,6 +53,39 @@ def test_graph_output(analytics):
     summary = graph_summary(frame)
     assert summary["customers_in_short_cycles"] >= 24
     assert summary["maximum_component_size"] >= 1
+
+    customers = pd.DataFrame({"customer_id": pd.Series(dtype="string")})
+    transactions = pd.DataFrame(
+        {
+            "customer_id": pd.Series(dtype="string"),
+            "counterparty_id": pd.Series(dtype="string"),
+            "transaction_id": pd.Series(dtype="string"),
+            "amount_try": pd.Series(dtype="float64"),
+            "timestamp": pd.Series(dtype="datetime64[ns]"),
+        }
+    )
+
+    features = build_graph_features(transactions, customers)
+
+    assert features.empty
+    assert list(features.columns) == [
+        "customer_id",
+        "in_degree",
+        "out_degree",
+        "total_degree",
+        "pagerank",
+        "component_size",
+        "short_cycle_member",
+        "degree_percentile",
+        "pagerank_percentile",
+        "component_percentile",
+        "graph_risk_score",
+    ]
+    assert graph_summary(features) == {
+        "customers_in_short_cycles": 0,
+        "maximum_component_size": 0,
+        "p95_graph_risk_score": 0.0,
+    }
 
 
 def test_all_scenarios_execute(analytics):

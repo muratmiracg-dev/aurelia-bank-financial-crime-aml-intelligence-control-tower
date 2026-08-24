@@ -245,9 +245,7 @@ def _write_sqlite(path: Path, frames: dict[str, pd.DataFrame]) -> None:
 
 def _write_manifest(root: Path, figures: list[Path]) -> None:
     candidates = [
-        path
-        for path in (root / "data" / "demo").glob("*.csv")
-        if path.name != "transactions.csv"
+        path for path in (root / "data" / "demo").glob("*.csv") if path.name != "transactions.csv"
     ]
     candidates += [
         path

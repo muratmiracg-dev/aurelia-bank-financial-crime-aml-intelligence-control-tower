@@ -17,9 +17,7 @@ GRAPH_FEATURE_COLUMNS = [
 ]
 
 
-def build_graph_features(
-    transactions: pd.DataFrame, customers: pd.DataFrame
-) -> pd.DataFrame:
+def build_graph_features(transactions: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
     """Calculate interpretable graph features without making guilt inferences."""
     internal = transactions.loc[
         transactions["counterparty_id"].astype(str).str.startswith("C")
@@ -27,9 +25,7 @@ def build_graph_features(
     ].copy()
     graph = nx.DiGraph()
     graph.add_nodes_from(customers["customer_id"])
-    edge_summary = internal.groupby(
-        ["customer_id", "counterparty_id"], as_index=False
-    ).agg(
+    edge_summary = internal.groupby(["customer_id", "counterparty_id"], as_index=False).agg(
         transaction_count=("transaction_id", "count"), amount_try=("amount_try", "sum")
     )
     for row in edge_summary.itertuples():
@@ -39,9 +35,7 @@ def build_graph_features(
             transaction_count=int(row.transaction_count),
             amount_try=float(row.amount_try),
         )
-    pagerank = (
-        nx.pagerank(graph, weight="amount_try") if graph.number_of_edges() else {}
-    )
+    pagerank = nx.pagerank(graph, weight="amount_try") if graph.number_of_edges() else {}
     undirected = graph.to_undirected()
     component_size: dict[str, int] = {}
     for component in nx.connected_components(undirected):
@@ -85,9 +79,7 @@ def _cycle_members(internal: pd.DataFrame) -> set[str]:
     members: set[str] = set()
     for _, group in high_value.groupby("time_bucket"):
         graph = nx.DiGraph()
-        graph.add_edges_from(
-            zip(group["customer_id"], group["counterparty_id"], strict=False)
-        )
+        graph.add_edges_from(zip(group["customer_id"], group["counterparty_id"], strict=False))
         for cycle in nx.simple_cycles(graph, length_bound=4):
             if 2 < len(cycle) <= 4:
                 members.update(cycle)
@@ -107,7 +99,5 @@ def graph_summary(features: pd.DataFrame) -> dict[str, float | int]:
     return {
         "customers_in_short_cycles": int(features["short_cycle_member"].sum()),
         "maximum_component_size": int(features["component_size"].max()),
-        "p95_graph_risk_score": round(
-            float(np.percentile(features["graph_risk_score"], 95)), 2
-        ),
+        "p95_graph_risk_score": round(float(np.percentile(features["graph_risk_score"], 95)), 2),
     }

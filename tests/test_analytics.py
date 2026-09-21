@@ -21,6 +21,27 @@ def test_kyc_missing_columns(config, demo):
         score_kyc(demo["customers"].drop(columns="pep_flag"), config["assumptions"])
 
 
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("pep_flag", "False"),
+        ("synthetic_watchlist_match", 0),
+        ("beneficial_owner_complete", 1),
+        ("source_of_funds_verified", None),
+    ],
+)
+def test_kyc_rejects_ambiguous_boolean_values(config, demo, field, invalid_value):
+    customers = demo["customers"].copy()
+    customers[field] = customers[field].astype(object)
+    customers.loc[customers.index[0], field] = invalid_value
+
+    with pytest.raises(
+        DataQualityError,
+        match="KYC boolean fields require explicit true/false values",
+    ):
+        score_kyc(customers, config["assumptions"])
+
+
 def test_anomaly_output(analytics):
     frame = analytics["anomaly"]
     assert frame["anomaly_score"].between(0, 100).all()

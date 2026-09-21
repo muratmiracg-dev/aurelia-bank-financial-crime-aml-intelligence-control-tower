@@ -22,6 +22,11 @@
 | `expected_monthly_turnover_try` | decimal | Synthetic expected activity profile |
 | `kyc_review_due_date` | date | Internal periodic-review due date |
 | `beneficial_owner_complete` | boolean | Synthetic KYC completeness indicator |
+| `source_of_funds_verified` | boolean | Synthetic source-of-funds control indicator |
+
+KYC boolean fields accept explicit `true`/`false` values only. Numeric, text and null
+representations are rejected before scoring so ambiguous coercion cannot change risk or
+control-gap results.
 
 ## Key transaction fields
 

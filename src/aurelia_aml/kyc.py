@@ -27,6 +27,21 @@ def score_kyc(customers: pd.DataFrame, assumptions: dict[str, Any]) -> pd.DataFr
     if missing:
         raise DataQualityError(f"Customer data missing KYC fields: {sorted(missing)}")
     frame = customers.copy()
+    boolean_fields = [
+        "pep_flag",
+        "synthetic_watchlist_match",
+        "beneficial_owner_complete",
+        "source_of_funds_verified",
+    ]
+    invalid_boolean_fields = [
+        field
+        for field in boolean_fields
+        if not frame[field].map(lambda value: isinstance(value, (bool, np.bool_))).all()
+    ]
+    if invalid_boolean_fields:
+        raise DataQualityError(
+            f"KYC boolean fields require explicit true/false values: {invalid_boolean_fields}"
+        )
     risk_map = assumptions["jurisdiction_risk"]
     frame["geography_score"] = frame["residence_country"].map(risk_map).fillna(25).astype(float)
     frame["pep_score"] = frame["pep_flag"].astype(int) * 22.0

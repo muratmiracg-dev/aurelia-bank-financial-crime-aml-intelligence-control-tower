@@ -238,3 +238,7 @@ Released under the [MIT License](LICENSE).
 ---
 
 Built by **Murat Miraç Gedik** as a Banking, AML, Financial Crime, Risk Analytics and Data portfolio project.
+
+### Input validation contract
+
+All four alert scoring weights must be explicitly supplied as finite, non-negative numeric values (excluding booleans) and sum to one. Invalid configuration is rejected before alert prioritisation.

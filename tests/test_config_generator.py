@@ -85,3 +85,26 @@ def test_data_are_synthetic(demo):
     assert demo["customers"]["data_class"].eq("CONTROLLED_SYNTHETIC").all()
     assert demo["transactions"]["data_class"].eq("CONTROLLED_SYNTHETIC").all()
     assert demo["transactions"]["amount_try"].gt(0).all()
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -0.1, True, "0.5", None])
+def test_alert_weight_requires_finite_non_negative_number(config, value):
+    bad = deepcopy(config)
+    bad["scoring"]["alert_scoring"]["scenario_weight"] = value
+    with pytest.raises(ConfigurationError, match="finite non-negative number"):
+        validate_project_config(bad)
+
+
+def test_alert_weights_reject_negative_cancellation(config):
+    bad = deepcopy(config)
+    weights = bad["scoring"]["alert_scoring"]
+    weights.update(scenario_weight=-1, kyc_weight=2, anomaly_weight=0, graph_weight=0)
+    with pytest.raises(ConfigurationError, match="finite non-negative number"):
+        validate_project_config(bad)
+
+
+def test_alert_weights_require_all_components(config):
+    bad = deepcopy(config)
+    del bad["scoring"]["alert_scoring"]["graph_weight"]
+    with pytest.raises(ConfigurationError, match="graph_weight"):
+        validate_project_config(bad)

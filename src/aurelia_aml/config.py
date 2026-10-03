@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any
 
@@ -45,10 +46,15 @@ def validate_project_config(config: dict[str, Any]) -> None:
     if missing:
         raise ConfigurationError(f"Missing governed scenarios: {missing}")
     weights = config.get("scoring", {}).get("alert_scoring", {})
-    total = sum(
-        float(weights.get(key, 0))
-        for key in ("scenario_weight", "kyc_weight", "anomaly_weight", "graph_weight")
-    )
+    weight_values = []
+    for key in ("scenario_weight", "kyc_weight", "anomaly_weight", "graph_weight"):
+        value = weights.get(key)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ConfigurationError(f"{key} must be a finite non-negative number")
+        if not math.isfinite(value) or value < 0:
+            raise ConfigurationError(f"{key} must be a finite non-negative number")
+        weight_values.append(value)
+    total = sum(weight_values)
     if abs(total - 1.0) > 1e-9:
         raise ConfigurationError("Alert scoring weights must sum to 1.0")
     if assumptions.get("synthetic_high_risk_jurisdiction") not in assumptions.get(

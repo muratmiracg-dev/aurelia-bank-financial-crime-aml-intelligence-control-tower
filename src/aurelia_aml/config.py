@@ -36,10 +36,10 @@ def load_project_config(root: str | Path) -> dict[str, Any]:
 def validate_project_config(config: dict[str, Any]) -> None:
     assumptions = config.get("assumptions", {})
     population = assumptions.get("synthetic_population", {})
-    if any(
-        int(population.get(key, 0)) <= 0
-        for key in ("customers", "accounts", "baseline_transactions")
-    ):
+    population_values = [
+        population.get(key) for key in ("customers", "accounts", "baseline_transactions")
+    ]
+    if any(type(value) is not int or value <= 0 for value in population_values):
         raise ConfigurationError("Synthetic population settings must be positive integers")
     scenarios = config.get("scenarios", {}).get("scenarios", {})
     missing = [scenario for scenario in SCENARIO_IDS if scenario not in scenarios]

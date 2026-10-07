@@ -38,6 +38,14 @@ def test_population_must_be_positive(config, field):
         validate_project_config(bad)
 
 
+@pytest.mark.parametrize("value", [True, 10.5, "100"])
+def test_population_requires_integer_type(config, value):
+    bad = deepcopy(config)
+    bad["assumptions"]["synthetic_population"]["customers"] = value
+    with pytest.raises(ConfigurationError, match="positive integers"):
+        validate_project_config(bad)
+
+
 def test_missing_scenario_rejected(config):
     bad = deepcopy(config)
     del bad["scenarios"]["scenarios"]["STRUCTURING"]

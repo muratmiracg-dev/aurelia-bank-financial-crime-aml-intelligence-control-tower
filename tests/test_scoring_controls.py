@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from aurelia_aml.controls import data_quality_controls, operational_controls
 from aurelia_aml.scoring import build_alerts, build_cases, validation_performance
@@ -69,3 +70,32 @@ def test_operational_controls(config, demo, analytics):
     assert len(controls) == 7
     assert set(controls["operator"]) == {">=", "<=", "=="}
     assert set(controls["status"]) <= {"PASS", "BREACH"}
+
+
+def test_alert_scoring_rejects_invalid_or_unmatched_risk_signals(config, analytics):
+    hits = analytics["hits"].head(1)
+    customer_id = hits.iloc[0]["customer_id"]
+    base = {
+        "kyc": analytics["kyc"].loc[lambda frame: frame["customer_id"] == customer_id].copy(),
+        "anomaly": analytics["anomaly"]
+        .loc[lambda frame: frame["customer_id"] == customer_id]
+        .copy(),
+        "graph": analytics["graph"].loc[lambda frame: frame["customer_id"] == customer_id].copy(),
+    }
+    cases = [
+        ("kyc", "kyc_risk_score", float("nan")),
+        ("anomaly", "anomaly_score", float("inf")),
+        ("graph", "graph_risk_score", -1.0),
+    ]
+    for frame_name, column, value in cases:
+        frames = {name: frame.copy() for name, frame in base.items()}
+        frames[frame_name].loc[:, column] = value
+        with pytest.raises(ValueError, match="risk score"):
+            build_alerts(
+                hits,
+                frames["kyc"],
+                frames["anomaly"],
+                frames["graph"],
+                config["scenarios"],
+                config["scoring"],
+            )

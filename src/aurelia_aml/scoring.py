@@ -45,6 +45,15 @@ def build_alerts(
         )
     )
     frame["scenario_severity"] = frame["scenario_id"].map(severity)
+    risk_columns = ["scenario_severity", "kyc_risk_score", "anomaly_score", "graph_risk_score"]
+    numeric_risk = frame[risk_columns].apply(pd.to_numeric, errors="coerce")
+    if numeric_risk.isna().any().any() or not np.isfinite(numeric_risk.to_numpy()).all():
+        raise ValueError(
+            "Every alert must have finite scenario, KYC, anomaly and graph risk scores"
+        )
+    if ((numeric_risk < 0) | (numeric_risk > 100)).any().any():
+        raise ValueError("Alert risk scores must be between 0 and 100")
+    frame[risk_columns] = numeric_risk
     weights = scoring_config["alert_scoring"]
     frame["alert_score"] = (
         frame["scenario_severity"] * float(weights["scenario_weight"])

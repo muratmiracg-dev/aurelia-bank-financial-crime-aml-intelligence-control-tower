@@ -77,12 +77,10 @@ def test_alert_scoring_rejects_invalid_or_unmatched_risk_signals(config, analyti
     customer_id = hits.iloc[0]["customer_id"]
     base = {
         "kyc": analytics["kyc"].loc[lambda frame: frame["customer_id"] == customer_id].copy(),
-        "anomaly": analytics["anomaly"].loc[
-            lambda frame: frame["customer_id"] == customer_id
-        ].copy(),
-        "graph": analytics["graph"].loc[
-            lambda frame: frame["customer_id"] == customer_id
-        ].copy(),
+        "anomaly": analytics["anomaly"]
+        .loc[lambda frame: frame["customer_id"] == customer_id]
+        .copy(),
+        "graph": analytics["graph"].loc[lambda frame: frame["customer_id"] == customer_id].copy(),
     }
     cases = [
         ("kyc", "kyc_risk_score", float("nan")),

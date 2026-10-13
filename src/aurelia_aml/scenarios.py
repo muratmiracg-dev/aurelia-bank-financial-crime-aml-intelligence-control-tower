@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import Any
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 
 from .exceptions import DataQualityError
@@ -38,10 +39,19 @@ def run_scenarios(
     if missing:
         raise DataQualityError(f"Transaction data missing fields: {sorted(missing)}")
     tx = transactions.copy()
-    tx["timestamp"] = pd.to_datetime(tx["timestamp"])
-    tx["amount_try"] = pd.to_numeric(tx["amount_try"])
-    if (tx["amount_try"] <= 0).any():
-        raise DataQualityError("Transaction amounts must be positive")
+    try:
+        tx["timestamp"] = pd.to_datetime(tx["timestamp"], errors="raise")
+        tx["amount_try"] = pd.to_numeric(tx["amount_try"], errors="raise")
+    except (TypeError, ValueError) as exc:
+        raise DataQualityError("Transaction timestamps and amounts must be valid") from exc
+    if tx["transaction_id"].duplicated().any():
+        raise DataQualityError("Transaction IDs must be unique")
+    if not np.isfinite(tx["amount_try"]).all() or (tx["amount_try"] <= 0).any():
+        raise DataQualityError("Transaction amounts must be finite and positive")
+    if not tx["direction"].isin({"IN", "OUT"}).all():
+        raise DataQualityError("Transaction direction must be IN or OUT")
+    if not tx["cash_flag"].map(lambda value: type(value) is bool).all():
+        raise DataQualityError("Cash flags require explicit true/false values")
     scenarios = scenario_config["scenarios"]
     runners: tuple[tuple[str, Callable[..., list[dict[str, object]]]], ...] = (
         ("STRUCTURING", _structuring),

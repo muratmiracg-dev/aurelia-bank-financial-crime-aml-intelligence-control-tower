@@ -137,6 +137,31 @@ def test_scenario_data_quality_errors(config, demo):
 
 
 @pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("amount_try", float("nan"), "finite and positive"),
+        ("direction", "SIDEWAYS", "IN or OUT"),
+        ("cash_flag", "False", "explicit true/false"),
+    ],
+)
+def test_scenarios_reject_ambiguous_transaction_values(config, demo, field, value, message):
+    invalid = demo["transactions"].copy()
+    invalid[field] = invalid[field].astype(object)
+    invalid.loc[invalid.index[0], field] = value
+    with pytest.raises(DataQualityError, match=message):
+        run_scenarios(invalid, demo["accounts"], config["scenarios"], config["assumptions"])
+
+
+def test_scenarios_reject_duplicate_transaction_ids(config, demo):
+    invalid = demo["transactions"].copy()
+    invalid.loc[invalid.index[1], "transaction_id"] = invalid.loc[
+        invalid.index[0], "transaction_id"
+    ]
+    with pytest.raises(DataQualityError, match="unique"):
+        run_scenarios(invalid, demo["accounts"], config["scenarios"], config["assumptions"])
+
+
+@pytest.mark.parametrize(
     "scenario,minimum_recall",
     [
         ("STRUCTURING", 0.95),

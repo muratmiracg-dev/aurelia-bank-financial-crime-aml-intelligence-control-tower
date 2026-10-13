@@ -57,3 +57,6 @@ control-gap results.
 | `investigation_packets` | Case | Safe evidence template with decision unset |
 
 Dates are ISO-8601, booleans are explicit, and monetary amounts are TRY equivalents unless otherwise stated.
+Transaction ingestion also rejects duplicate IDs, non-finite or non-positive amounts,
+directions outside `IN`/`OUT`, and ambiguous cash-flag representations before any
+monitoring scenario runs.

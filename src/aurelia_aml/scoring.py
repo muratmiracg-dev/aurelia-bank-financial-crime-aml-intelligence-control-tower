@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
@@ -55,11 +56,19 @@ def build_alerts(
         raise ValueError("Alert risk scores must be between 0 and 100")
     frame[risk_columns] = numeric_risk
     weights = scoring_config["alert_scoring"]
+    weight_names = ("scenario_weight", "kyc_weight", "anomaly_weight", "graph_weight")
+    raw_weights = [weights.get(name) for name in weight_names]
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in raw_weights):
+        raise ValueError("Alert scoring weights must be numeric and must not be booleans")
+    numeric_weights = [float(value) for value in raw_weights]
+    if (not all(math.isfinite(value) and value >= 0 for value in numeric_weights)
+            or not math.isclose(sum(numeric_weights), 1.0, abs_tol=1e-9)):
+        raise ValueError("Alert scoring weights must be finite, non-negative and sum to one")
     frame["alert_score"] = (
-        frame["scenario_severity"] * float(weights["scenario_weight"])
-        + frame["kyc_risk_score"] * float(weights["kyc_weight"])
-        + frame["anomaly_score"] * float(weights["anomaly_weight"])
-        + frame["graph_risk_score"] * float(weights["graph_weight"])
+        frame["scenario_severity"] * numeric_weights[0]
+        + frame["kyc_risk_score"] * numeric_weights[1]
+        + frame["anomaly_score"] * numeric_weights[2]
+        + frame["graph_risk_score"] * numeric_weights[3]
     ).clip(0, 100)
     frame["alert_score"] = frame["alert_score"].round(2)
     frame["priority"] = np.select(

@@ -61,8 +61,9 @@ def build_alerts(
     if any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in raw_weights):
         raise ValueError("Alert scoring weights must be numeric and must not be booleans")
     numeric_weights = [float(value) for value in raw_weights]
-    if (not all(math.isfinite(value) and value >= 0 for value in numeric_weights)
-            or not math.isclose(sum(numeric_weights), 1.0, abs_tol=1e-9)):
+    if not all(
+        math.isfinite(value) and value >= 0 for value in numeric_weights
+    ) or not math.isclose(sum(numeric_weights), 1.0, abs_tol=1e-9):
         raise ValueError("Alert scoring weights must be finite, non-negative and sum to one")
     frame["alert_score"] = (
         frame["scenario_severity"] * numeric_weights[0]

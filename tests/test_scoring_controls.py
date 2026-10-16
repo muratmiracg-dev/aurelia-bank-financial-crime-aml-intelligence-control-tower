@@ -109,8 +109,12 @@ def test_alert_scoring_rejects_invalid_weights(config, analytics, value):
     scoring["alert_scoring"]["scenario_weight"] = value
     with pytest.raises(ValueError, match="weights"):
         build_alerts(
-            analytics["hits"].head(1), analytics["kyc"], analytics["anomaly"],
-            analytics["graph"], config["scenarios"], scoring,
+            analytics["hits"].head(1),
+            analytics["kyc"],
+            analytics["anomaly"],
+            analytics["graph"],
+            config["scenarios"],
+            scoring,
         )
 
 
@@ -119,6 +123,10 @@ def test_alert_scoring_rejects_weights_that_do_not_sum_to_one(config, analytics)
     scoring["alert_scoring"]["scenario_weight"] = 0.99
     with pytest.raises(ValueError, match="sum to one"):
         build_alerts(
-            analytics["hits"].head(1), analytics["kyc"], analytics["anomaly"],
-            analytics["graph"], config["scenarios"], scoring,
+            analytics["hits"].head(1),
+            analytics["kyc"],
+            analytics["anomaly"],
+            analytics["graph"],
+            config["scenarios"],
+            scoring,
         )

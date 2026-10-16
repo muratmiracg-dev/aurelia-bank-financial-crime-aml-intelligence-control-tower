@@ -1,3 +1,5 @@
+import copy
+
 import pandas as pd
 import pytest
 
@@ -99,3 +101,32 @@ def test_alert_scoring_rejects_invalid_or_unmatched_risk_signals(config, analyti
                 config["scenarios"],
                 config["scoring"],
             )
+
+
+@pytest.mark.parametrize("value", [True, -0.1, float("nan"), float("inf")])
+def test_alert_scoring_rejects_invalid_weights(config, analytics, value):
+    scoring = copy.deepcopy(config["scoring"])
+    scoring["alert_scoring"]["scenario_weight"] = value
+    with pytest.raises(ValueError, match="weights"):
+        build_alerts(
+            analytics["hits"].head(1),
+            analytics["kyc"],
+            analytics["anomaly"],
+            analytics["graph"],
+            config["scenarios"],
+            scoring,
+        )
+
+
+def test_alert_scoring_rejects_weights_that_do_not_sum_to_one(config, analytics):
+    scoring = copy.deepcopy(config["scoring"])
+    scoring["alert_scoring"]["scenario_weight"] = 0.99
+    with pytest.raises(ValueError, match="sum to one"):
+        build_alerts(
+            analytics["hits"].head(1),
+            analytics["kyc"],
+            analytics["anomaly"],
+            analytics["graph"],
+            config["scenarios"],
+            scoring,
+        )

@@ -1,5 +1,8 @@
 # Methodology
 
+Alert scoring weights are treated as a governed contract: every weight must be a finite,
+non-negative number and the four components must sum to one. Invalid configuration fails
+closed before any alert score or priority is produced.
 ## Purpose and decision boundary
 
 The platform prioritises synthetic investigative leads for a fictional bank. A score is neither evidence of a crime nor a ŞİB/STR decision. The workflow ends at a documented human-review queue; it cannot submit a report, freeze an account or take adverse action.

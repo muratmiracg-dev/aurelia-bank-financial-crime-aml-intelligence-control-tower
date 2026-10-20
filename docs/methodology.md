@@ -47,7 +47,7 @@ An Isolation Forest receives eight robust-scaled, customer-level features:
 - turnover deviation against the expected three-month profile;
 - cash share, synthetic high-risk jurisdiction share and outbound/inbound ratio.
 
-The model uses 180 estimators, 5% contamination and deterministic seed `20260821`. The decision function is converted to a percentile score from 0 to 100. Anomaly output is a prioritisation signal only; it does not independently create a case.
+The model uses 180 estimators, 5% contamination and deterministic seed `20260821`. Contamination must be a finite numeric value in `(0, 0.5]`, and the seed must be an integer; ambiguous configuration fails before model fitting. The decision function is converted to a percentile score from 0 to 100. Anomaly output is a prioritisation signal only; it does not independently create a case.
 
 ## Graph analytics
 

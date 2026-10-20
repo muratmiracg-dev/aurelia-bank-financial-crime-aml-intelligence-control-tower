@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numbers
 from typing import Any
 
 import numpy as np
@@ -18,6 +19,16 @@ def score_anomalies(
     seed: int,
 ) -> pd.DataFrame:
     """Fit a deterministic Isolation Forest to customer-level behavioural features."""
+    contamination = scoring_config.get("model_validation", {}).get("anomaly_contamination")
+    if (
+        isinstance(contamination, (bool, np.bool_))
+        or not isinstance(contamination, numbers.Real)
+        or not np.isfinite(contamination)
+        or not 0 < float(contamination) <= 0.5
+    ):
+        raise ValueError("Anomaly contamination must be a finite number in (0, 0.5]")
+    if isinstance(seed, (bool, np.bool_)) or not isinstance(seed, numbers.Integral):
+        raise ValueError("Anomaly seed must be an integer")
     high_risk = assumptions["synthetic_high_risk_jurisdiction"]
     tx = transactions.assign(
         incoming_amount=np.where(transactions["direction"] == "IN", transactions["amount_try"], 0),
@@ -63,7 +74,7 @@ def score_anomalies(
         "out_in_ratio",
     ]
     matrix = RobustScaler().fit_transform(frame[model_features])
-    contamination = float(scoring_config["model_validation"]["anomaly_contamination"])
+    contamination = float(contamination)
     model = IsolationForest(
         n_estimators=180,
         contamination=contamination,

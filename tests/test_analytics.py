@@ -67,6 +67,31 @@ def test_anomaly_is_reproducible(config, demo):
     pd.testing.assert_series_equal(first["anomaly_score"], second["anomaly_score"])
 
 
+@pytest.mark.parametrize("contamination", [True, "0.05", 0, -0.1, 0.51, float("nan")])
+def test_anomaly_rejects_invalid_contamination(config, demo, contamination):
+    scoring = {
+        **config["scoring"],
+        "model_validation": {
+            **config["scoring"]["model_validation"],
+            "anomaly_contamination": contamination,
+        },
+    }
+    with pytest.raises(ValueError, match="contamination"):
+        score_anomalies(demo["transactions"], demo["customers"], config["assumptions"], scoring, 7)
+
+
+@pytest.mark.parametrize("seed", [True, 7.5, "7"])
+def test_anomaly_rejects_non_integer_seed(config, demo, seed):
+    with pytest.raises(ValueError, match="seed"):
+        score_anomalies(
+            demo["transactions"],
+            demo["customers"],
+            config["assumptions"],
+            config["scoring"],
+            seed,
+        )
+
+
 def test_graph_output(analytics):
     frame = analytics["graph"]
     assert frame["graph_risk_score"].between(0, 100).all()

@@ -134,6 +134,16 @@ def test_graph_output(analytics):
     }
 
 
+@pytest.mark.parametrize("counterparty_id", [None, "", "   ", " C000001 "])
+def test_graph_rejects_missing_or_untrimmed_counterparty_ids(demo, counterparty_id):
+    transactions = demo["transactions"].head(1).copy()
+    transactions["counterparty_id"] = transactions["counterparty_id"].astype(object)
+    transactions.loc[transactions.index[0], "counterparty_id"] = counterparty_id
+
+    with pytest.raises(ValueError, match="counterparty identifiers"):
+        build_graph_features(transactions, demo["customers"].head(2).copy())
+
+
 def test_all_scenarios_execute(analytics):
     hits = analytics["hits"]
     assert set(hits["scenario_id"]) == {

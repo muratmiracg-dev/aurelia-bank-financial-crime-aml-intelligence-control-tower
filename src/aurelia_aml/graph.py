@@ -19,6 +19,13 @@ GRAPH_FEATURE_COLUMNS = [
 
 def build_graph_features(transactions: pd.DataFrame, customers: pd.DataFrame) -> pd.DataFrame:
     """Calculate interpretable graph features without making guilt inferences."""
+    if "counterparty_id" not in transactions.columns:
+        raise ValueError("Transaction counterparty identifiers are required for graph analytics")
+    counterparties = transactions["counterparty_id"]
+    if counterparties.isna().any() or counterparties.astype(str).str.strip().eq("").any():
+        raise ValueError("Transaction counterparty identifiers must be populated")
+    if counterparties.astype(str).ne(counterparties.astype(str).str.strip()).any():
+        raise ValueError("Transaction counterparty identifiers must be trimmed")
     internal = transactions.loc[
         transactions["counterparty_id"].astype(str).str.startswith("C")
         & (transactions["customer_id"] != transactions["counterparty_id"])

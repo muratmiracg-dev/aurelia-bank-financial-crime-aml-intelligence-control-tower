@@ -279,9 +279,19 @@ def _circular_transfer(
         & (tx["direction"] == "OUT")
         & (tx["amount_try"] >= minimum)
     ].copy()
-    internal["time_bucket"] = internal["timestamp"].dt.floor(f"{int(cfg['window_hours'])}h")
+    internal = internal.sort_values(["timestamp", "transaction_id"]).reset_index(drop=True)
+    window_length = pd.to_timedelta(int(cfg["window_hours"]), unit="h")
     candidates: dict[str, dict[str, object]] = {}
-    for _, group in internal.groupby("time_bucket"):
+    # Anchor a window at every transaction instead of using fixed calendar buckets, so a
+    # cycle completed within the window is found even when it crosses a bucket boundary.
+    seen_windows: set[tuple[int, int]] = set()
+    timestamps = internal["timestamp"]
+    for start_position, start_time in enumerate(timestamps):
+        end_position = int(timestamps.searchsorted(start_time + window_length, side="right"))
+        if (start_position, end_position) in seen_windows or end_position - start_position < 3:
+            continue
+        seen_windows.add((start_position, end_position))
+        group = internal.iloc[start_position:end_position]
         graph = nx.DiGraph()
         for row in group.itertuples():
             graph.add_edge(row.customer_id, row.counterparty_id, transaction_id=row.transaction_id)

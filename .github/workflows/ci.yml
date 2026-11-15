@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,6 +35,17 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: python -m pip install -e .
+      # 1. The committed files must match the committed MANIFEST.sha256.
+      - run: python scripts/verify_artifacts.py
+      # 2. Regenerating the demo must reproduce the committed values. The manifest
+      #    alone cannot show this: the pipeline rewrites outputs and manifest together.
+      - run: |
+          mkdir -p "$RUNNER_TEMP/committed/artifacts"
+          cp -r data "$RUNNER_TEMP/committed/data"
+          cp -r artifacts/results "$RUNNER_TEMP/committed/artifacts/results"
+          cp artifacts/aurelia_aml_demo.sqlite "$RUNNER_TEMP/committed/artifacts/"
       - run: python scripts/run_demo.py
+      - run: python scripts/compare_outputs.py "$RUNNER_TEMP/committed"
+      # 3. The regenerated pack is internally consistent.
       - run: python scripts/build_manifest.py
       - run: python scripts/verify_artifacts.py

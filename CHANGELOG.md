@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- CI now proves that the committed decision pack is reproducible. Before, the
+  `deterministic-demo` job regenerated the outputs, rewrote `MANIFEST.sha256` from them and then
+  verified the new manifest, so stale or edited committed results always passed. The job now
+  verifies the committed files against the committed manifest first, then regenerates and
+  compares every CSV, JSON and SQLite table with the committed values (`scripts/compare_outputs.py`).
+- `make demo` and `make verify` now write the same manifest (`aurelia_aml.manifest`). The
+  pipeline's own manifest omitted the SQLite layer, workbook, deck and PDF.
+- The pipeline integration test runs in a temporary project root instead of rewriting the
+  committed artifacts during `pytest`.
+- CI test matrix adds Python 3.13.
 - Fixed a false negative in `CIRCULAR_TRANSFER`. Transfers were grouped into fixed 48-hour
   calendar buckets, so a three-party cycle completed within hours was missed whenever it
   crossed a bucket boundary. The scenario now evaluates a rolling `window_hours` window

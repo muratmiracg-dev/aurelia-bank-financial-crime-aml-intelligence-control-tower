@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sqlite3
 from pathlib import Path
@@ -16,6 +15,7 @@ from .controls import data_quality_controls, operational_controls
 from .generator import build_demo_data
 from .graph import build_graph_features, graph_summary
 from .kyc import score_kyc
+from .manifest import write_manifest
 from .reporting import create_figures
 from .scenarios import run_scenarios
 from .scoring import build_alerts, build_cases, validation_performance
@@ -77,7 +77,7 @@ def run_pipeline(root: str | Path, seed: int = 20260821) -> dict[str, Any]:
         "investigation_packets": investigation_packets,
     }
     _write_frames(results, root / "artifacts" / "results")
-    figures = create_figures(results, root / "artifacts" / "figures")
+    create_figures(results, root / "artifacts" / "figures")
     summary = _executive_summary(data, results, config, seed)
     summary_path = root / "artifacts" / "results" / "executive_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -93,7 +93,7 @@ def run_pipeline(root: str | Path, seed: int = 20260821) -> dict[str, Any]:
         "investigation_packets": results["investigation_packets"],
     }
     _write_sqlite(root / "artifacts" / "aurelia_aml_demo.sqlite", sqlite_frames)
-    _write_manifest(root, figures)
+    write_manifest(root)
     return summary
 
 
@@ -241,20 +241,3 @@ def _write_sqlite(path: Path, frames: dict[str, pd.DataFrame]) -> None:
                         )
                     )
             serializable.to_sql(name, connection, if_exists="replace", index=False)
-
-
-def _write_manifest(root: Path, figures: list[Path]) -> None:
-    candidates = [
-        path for path in (root / "data" / "demo").glob("*.csv") if path.name != "transactions.csv"
-    ]
-    candidates += [
-        path
-        for path in (root / "artifacts" / "results").glob("*.csv")
-        if path.name != "graph_edges.csv"
-    ]
-    candidates += [root / "artifacts" / "results" / "executive_summary.json", *figures]
-    lines = []
-    for path in sorted(candidates):
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        lines.append(f"{digest}  {path.relative_to(root).as_posix()}")
-    (root / "MANIFEST.sha256").write_text("\n".join(lines) + "\n", encoding="utf-8")

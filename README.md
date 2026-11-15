@@ -148,7 +148,7 @@ python -m pip install -e ".[dev]"
 make verify
 ```
 
-`make verify` runs Ruff, the 38-test suite with a 90% coverage gate, deterministic regeneration and artifact/checksum verification.
+`make verify` runs Ruff and the 85-test suite with a 90% coverage gate. It then checks the committed files against `MANIFEST.sha256`, regenerates the demo and compares every regenerated CSV, JSON and SQLite table with the committed values (`scripts/compare_outputs.py`, relative tolerance 1e-9), and finally re-verifies the rebuilt manifest. CI runs the same sequence. PNG figures and the SQLite file are compared by content, not bytes, because their bytes change with library versions.
 
 Run individual workflows:
 

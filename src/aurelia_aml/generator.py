@@ -44,6 +44,12 @@ def build_demo_data(config: dict[str, Any], seed: int = 20260821) -> dict[str, p
         transactions, customers, accounts, as_of, rng
     )
     relationships = _build_relationships(customers, accounts, rng)
+    # A monitoring snapshot cannot contain activity after its as-of cut-off.
+    late = transactions["timestamp"] > as_of
+    if late.any():
+        raise ValueError(
+            f"{int(late.sum())} generated transactions are dated after as_of_date {as_of.date()}"
+        )
     return {
         "customers": customers,
         "accounts": accounts,
@@ -344,7 +350,8 @@ def _inject_typologies(
         add_truth("CIRCULAR_TRANSFER", trio, start, start + _offset(hours=8))
 
     for customer in groups["HIGH_RISK_GEOGRAPHY"]:
-        start = as_of - _offset(days=int(rng.integers(2, 28)), hours=9)
+        # Three transfers span six days; keep the last one before the as-of cut-off.
+        start = as_of - _offset(days=int(rng.integers(2, 28)) + 6, hours=9)
         for index in range(3):
             add_tx(
                 customer,
@@ -421,7 +428,8 @@ def _inject_typologies(
                 amount,
             )
     for customer in lookalikes["HIGH_RISK_GEOGRAPHY"]:
-        start = as_of - _offset(days=int(rng.integers(2, 24)), hours=8)
+        # Two transfers span four days; keep the last one before the as-of cut-off.
+        start = as_of - _offset(days=int(rng.integers(2, 24)) + 4, hours=8)
         for index in range(2):
             add_tx(
                 customer,

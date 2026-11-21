@@ -116,3 +116,19 @@ def test_alert_weights_require_all_components(config):
     del bad["scoring"]["alert_scoring"]["graph_weight"]
     with pytest.raises(ConfigurationError, match="graph_weight"):
         validate_project_config(bad)
+
+
+@pytest.mark.parametrize("seed", [20260821, 1, 7, 42, 2024])
+def test_no_activity_after_as_of_date(config, seed):
+    # Injected high-risk-geography transfers span up to six days; they used to start as
+    # little as two days before the cut-off, so the snapshot held future transactions.
+    data = build_demo_data(config, seed=seed)
+    as_of = pd.Timestamp(config["assumptions"]["as_of_date"])
+    assert data["transactions"]["timestamp"].max() <= as_of
+    truth = data["typology_truth"]
+    assert (pd.to_datetime(truth["injection_end"]) <= as_of).all()
+
+
+def test_rule_hits_end_before_as_of_date(config, analytics):
+    as_of = pd.Timestamp(config["assumptions"]["as_of_date"])
+    assert (pd.to_datetime(analytics["hits"]["window_end"]) <= as_of).all()

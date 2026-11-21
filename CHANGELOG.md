@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- The synthetic snapshot no longer contains activity after its 2026-08-20 cut-off. Injected
+  high-risk-geography transfers span six days (lookalikes four) but could start two days before
+  the as-of date, so four transactions were dated 20-23 August and three alerts closed after
+  the snapshot (one case was "created" on 23 August). Their start is now pushed back by the span,
+  the generator refuses to emit post-cut-off transactions, and tests cover five seeds. Headline
+  counts are unchanged (134 alerts, 126 cases, precision 67.91%, recall 98.91%); 21 case event
+  times and the affected rule-hit windows move earlier.
 - CI now proves that the committed decision pack is reproducible. Before, the
   `deterministic-demo` job regenerated the outputs, rewrote `MANIFEST.sha256` from them and then
   verified the new manifest, so stale or edited committed results always passed. The job now

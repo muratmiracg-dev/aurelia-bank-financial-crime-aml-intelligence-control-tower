@@ -130,3 +130,58 @@ def test_alert_scoring_rejects_weights_that_do_not_sum_to_one(config, analytics)
             config["scenarios"],
             scoring,
         )
+
+
+def _alert(customer: str, score: float, window_end: str) -> dict:
+    end = pd.Timestamp(window_end)
+    return {
+        "alert_id": f"A-{customer}",
+        "customer_id": customer,
+        "scenario_id": "SC",
+        "alert_score": score,
+        "amount_try": 1000.0,
+        "window_start": end - pd.Timedelta(days=1),
+        "window_end": end,
+    }
+
+
+def test_case_opens_at_first_alert_and_overdue_work_is_breached(config):
+    # A High case (1-day SLA) whose alert fired ten days before the snapshot cannot be
+    # "within SLA": it used to be re-dated to the snapshot day and always looked on time.
+    alerts = pd.DataFrame(
+        [_alert(f"C{i:03d}", 85.0, "2026-08-10 09:00") for i in range(10)]
+        + [_alert("C999", 85.0, "2026-08-19 22:00")]
+    )
+    cases = build_cases(alerts, config["assumptions"], "2026-08-20")
+    old = cases[cases["customer_id"] != "C999"]
+    assert (old["case_created_at"] == pd.Timestamp("2026-08-10 10:00")).all()
+    assert (old["due_at"] == pd.Timestamp("2026-08-11 10:00")).all()
+    # Review effort above the SLA closes late; nothing that old is still within SLA.
+    assert old["case_status"].eq("CLOSED").all()
+    assert set(old["sla_status"]) == {"MET", "BREACHED"}
+    late = old["closed_at"] > old["due_at"]
+    assert (old.loc[late, "sla_status"] == "BREACHED").all()
+    fresh = cases[cases["customer_id"] == "C999"].iloc[0]
+    assert fresh["case_status"] in {"OPEN", "IN_REVIEW"}
+    assert fresh["sla_status"] == "WITHIN_SLA"
+
+
+def test_open_cases_past_due_are_counted_as_breaches(config, demo, analytics):
+    # Effort factor 1.6 for case number 8: due after 1 day, still in review after 1.5 days.
+    alerts = pd.DataFrame(
+        [_alert(f"C{i:03d}", 85.0 - i * 0.1, "2026-08-18 12:00") for i in range(1, 11)]
+    )
+    cases = build_cases(alerts, config["assumptions"], "2026-08-20")
+    eighth = cases.loc[cases["case_id"] == "CASE000008"].iloc[0]
+    assert eighth["case_status"] == "IN_REVIEW"
+    assert eighth["sla_status"] == "BREACHED"
+    controls = operational_controls(
+        demo["customers"],
+        analytics["alerts"],
+        cases,
+        analytics["performance"],
+        config["scoring"],
+        config["assumptions"],
+    )
+    ops2 = controls.set_index("control_id").loc["OPS-02"]
+    assert ops2["status"] == "BREACH"

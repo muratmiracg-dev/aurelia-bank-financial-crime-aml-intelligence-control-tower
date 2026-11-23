@@ -102,6 +102,10 @@ def build_alerts(
     return frame
 
 
+# Review effort per case as a multiple of its SLA, cycled by case number.
+REVIEW_EFFORT_FACTORS = (0.4, 0.55, 0.7, 0.85, 0.55, 0.95, 1.2, 0.6, 1.6, 0.75)
+
+
 def build_cases(
     alerts: pd.DataFrame, assumptions: dict[str, Any], as_of: str | pd.Timestamp
 ) -> pd.DataFrame:
@@ -116,6 +120,7 @@ def build_cases(
         total_alert_amount_try=("amount_try", "sum"),
         first_event_at=("window_start", "min"),
         last_event_at=("window_end", "max"),
+        first_alert_at=("window_end", "min"),
     )
     high = float(80)
     medium = float(62)
@@ -136,23 +141,29 @@ def build_cases(
     }
     snapshot = pd.Timestamp(as_of)
     grouped["sla_days"] = grouped["priority"].map(sla_map)
-    grouped["case_created_at"] = grouped.apply(
-        lambda row: max(
-            pd.Timestamp(row["last_event_at"]) + pd.to_timedelta(1, unit="h"),
-            snapshot - pd.to_timedelta(max(1, int(row["sla_days"]) - 1), unit="D"),
-        ),
-        axis=1,
+    # The case opens when the customer's first alert is generated (its rule window closes,
+    # plus a one-hour monitoring batch lag). It used to be pulled forward to at most
+    # ``sla_days - 1`` before the snapshot, which made every open case look in SLA.
+    grouped["case_created_at"] = pd.to_datetime(grouped["first_alert_at"]) + pd.to_timedelta(
+        1, unit="h"
     )
+    grouped = grouped.drop(columns="first_alert_at")
     case_number = grouped["case_id"].str[-3:].astype(int)
+    # Deterministic synthetic review effort as a multiple of the SLA (mean ~0.8): most cases
+    # finish in time, a minority runs late. Status follows from age, not from a fixed mix.
+    review_factor = case_number.mod(len(REVIEW_EFFORT_FACTORS)).map(
+        dict(enumerate(REVIEW_EFFORT_FACTORS))
+    )
+    review_time = pd.to_timedelta(review_factor * grouped["sla_days"], unit="D")
+    finished_at = grouped["case_created_at"] + review_time
+    started = grouped["case_created_at"] + 0.25 * review_time <= snapshot
     grouped["case_status"] = np.select(
-        [case_number % 5 <= 2, case_number % 5 == 3], ["CLOSED", "IN_REVIEW"], default="OPEN"
+        [finished_at <= snapshot, started], ["CLOSED", "IN_REVIEW"], default="OPEN"
     )
     grouped["due_at"] = grouped["case_created_at"] + pd.to_timedelta(grouped["sla_days"], unit="D")
     grouped["closed_at"] = pd.NaT
     closed = grouped["case_status"] == "CLOSED"
-    grouped.loc[closed, "closed_at"] = grouped.loc[closed, "case_created_at"] + pd.to_timedelta(
-        0.55 * grouped.loc[closed, "sla_days"], unit="D"
-    )
+    grouped.loc[closed, "closed_at"] = finished_at[closed]
     grouped["sla_status"] = np.where(
         closed,
         np.where(grouped["closed_at"] <= grouped["due_at"], "MET", "BREACHED"),

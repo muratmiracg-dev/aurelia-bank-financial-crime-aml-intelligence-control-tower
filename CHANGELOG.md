@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Control OPS-02 ("open SLA breaches = 0") could never fail. Every case's creation time was
+  pulled forward to at most `sla_days - 1` before the snapshot, whenever its alerts actually
+  fired, so every open case was due after the snapshot; statuses came from a fixed 3:1:1
+  Closed/In Review/Open mix and closed cases always closed at 55% of the SLA. Cases now open one
+  hour after the customer's first alert, review effort is a deterministic 0.4-1.6 x SLA, and
+  status and SLA outcome follow from age. Result: 125 Closed and 1 In Review (was 76/25/25),
+  24 cases closed after SLA (new `closed_after_sla` in the executive summary), no open case
+  overdue. Alert, precision/recall and KYC figures are unchanged.
 - The synthetic snapshot no longer contains activity after its 2026-08-20 cut-off. Injected
   high-risk-geography transfers span six days (lookalikes four) but could start two days before
   the as-of date, so four transactions were dated 20-23 August and three alerts closed after

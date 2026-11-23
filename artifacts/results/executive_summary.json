@@ -35,10 +35,11 @@
   },
   "case_operations": {
     "cases": 126,
-    "open": 25,
-    "in_review": 25,
-    "closed": 76,
-    "open_sla_breaches": 0
+    "open": 0,
+    "in_review": 1,
+    "closed": 125,
+    "open_sla_breaches": 0,
+    "closed_after_sla": 24
   },
   "graph": {
     "customers_in_short_cycles": 30,

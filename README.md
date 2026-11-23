@@ -20,10 +20,10 @@ The model and alert operation are controlled, but customer due diligence needs i
 - **892 of 1,800 KYC reviews are overdue (49.6%)**, above the **35.0% internal management ceiling**.
 - 134 explainable alerts cover 126 customers, a **7.0% customer alert rate** inside the 12.0% ceiling.
 - The synthetic holdout produces **67.91% precision, 98.91% recall and 80.53% F1**; lookalike activity creates 43 deliberate false positives.
-- 126 cases comprise 76 Closed, 25 In Review and 25 Open; **no active case breaches SLA**.
+- 126 cases: 125 Closed and 1 In Review at the snapshot; **24 cases (19%) were closed after their SLA**, none of the active cases is overdue.
 - All 12 data-quality controls pass; all 21 High-priority alerts retain mandatory human review.
 
-The management response is explicit: clear overdue KYC reviews for alerted and High-risk customers first, fund separate weekly remediation capacity, and preserve the current zero-SLA-breach position.
+The management response is explicit: clear overdue KYC reviews for alerted and High-risk customers first, fund separate weekly remediation capacity, and cut the 19% of cases that close after SLA.
 
 > **Decision boundary:** Aurelia Bank is fictional. Every customer, account, transaction, relationship and screening flag is controlled synthetic data. Alerts are investigative leads—not findings of criminal activity. The platform cannot submit a ŞİB/STR, restrict a customer or take any adverse action. Numeric scenario settings are internal demonstration parameters, not legal reporting thresholds.
 

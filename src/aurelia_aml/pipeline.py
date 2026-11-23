@@ -205,6 +205,9 @@ def _executive_summary(
             "open_sla_breaches": int(
                 (cases["case_status"].ne("CLOSED") & cases["sla_status"].eq("BREACHED")).sum()
             ),
+            "closed_after_sla": int(
+                (cases["case_status"].eq("CLOSED") & cases["sla_status"].eq("BREACHED")).sum()
+            ),
         },
         "graph": graph_summary(results["graph_features"]),
         "controls": {

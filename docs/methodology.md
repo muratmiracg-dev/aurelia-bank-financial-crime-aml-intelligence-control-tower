@@ -71,7 +71,7 @@ where `S` is scenario severity, `A` is anomaly score and `G` is graph score. Hig
 
 ## Case aggregation and SLA
 
-Alerts are grouped by customer. The maximum alert score controls case priority; all involved scenario IDs and alert IDs remain attached. Internal target SLAs are one day for High, three days for Medium and five days for Low. The demo creates a deterministic operational snapshot with Open, In Review and Closed cases. Every case has `human_review_required = true`.
+Alerts are grouped by customer. The maximum alert score controls case priority; all involved scenario IDs and alert IDs remain attached. Internal target SLAs are one day for High, three days for Medium and five days for Low. A case opens one hour after the customer's first alert is generated (the end of its rule window) and is due `sla_days` later. Review effort is a deterministic synthetic multiple of the SLA (0.4-1.6, mean 0.8, cycled by case number); a case is Closed once that effort has elapsed before the snapshot, In Review once a quarter of it has, and Open otherwise. Status and SLA outcome therefore follow from each case's age. Earlier versions pulled every case's creation time forward to at most `sla_days - 1` before the snapshot and assigned statuses by a fixed 3:1:1 mix, so no open case could ever breach SLA and control OPS-02 could not fail. Every case has `human_review_required = true`.
 
 ## Validation
 
